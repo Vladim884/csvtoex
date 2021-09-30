@@ -23,16 +23,29 @@ app.post("/", function (req, res, next) {
     let resfound = [];
     let resname = [];
     let resgroup = [];
-    const csvpath = './pubmaticData.csv';
+    const csvpath = './newcsv.csv';
+    const exelpath = './newxl.xlsx';
     //==========
     
 try {
-    if (fs.existsSync(csvpath)) {
-    fs.unlinkSync(csvpath);
-    //file removed
-    console.log('csv was delete!');
-    }
-  } catch(err) {
+    if(fs.existsSync(csvpath)){
+    
+        fs.unlinkSync(csvpath);
+        console.log('csv-file was delete!');
+    } 
+    if(fs.existsSync(exelpath)){
+    
+        fs.unlinkSync(exelpath);
+        console.log('exel-file was delete!');
+    } 
+}
+//     if (fs.existsSync(csvpath)) {
+//     fs.unlinkSync(csvpath);//file removed
+    
+//     console.log('csv-file was delete!');
+//     } 
+  
+  catch(err) {
     console.error(err)
   }
     // console.log(__dirname);
@@ -79,61 +92,12 @@ try {
                     resgroup: resgroup
                     
                 });
-                // fs.readFile("/views/upload.hbs", "utf8", function(error, data){
-                //     let item_name = results[ind]['Название_позиции'];
-                //     let req_found = results[ind]['Поисковые_запросы']; 
-                //     let req_group = results[ind]['Название_группы'];
-                //     data = data.replace("{item_name}", item_name).replace("{item_name}", item_name).replace("{item_name}", item_name);
-                //     res.end(data);
-                // });
-                // 
-                // app.post("/upload1.hbs", urlencodedParser, function (request, response) {
-                //     if(!request.body) return response.sendStatus(400);
-                //     // console.log('request.body==========');
-                //     // console.log(request.body);
-                //     // console.log(request);
-                //     // console.log('request.body==========');
-                //     // console.log(`Поисковые_запросы: ${results[ind]['Поисковые_запросы']}`);
-                //     results[ind]['Поисковые_запросы'] = request.body.req_found;
-                //     console.log('request.bjdy.req_found');
-                //     console.log(request.body.req_found);
-                //     // console.log(`Поисковые_запросы: ${results[ind]['Поисковые_запросы']}`);
-                //     for (let i = 0; i < resfound.length; i++) {
-                //         results[i]['Поисковые_запросы'] = request.body.req_found[i];
-                //         results[i]['Название_позиции'] = request.body.req_name[i];
-                //         results[i]['Название_группы'] = request.body.req_group[i];
-                //     }
-                //     // response.send(`${request.body.req_found} - ${request.body.req_group}`);
-                //     let apiDataPull = Promise.resolve(results).then(data => {
-                //         return json2csv.parseAsync(data, {fields: Object.keys(results[0])})
-                //     }).then(csv => {
-                //         fs.writeFile('pubmaticData.csv', csv, function (err) {
-                //             if (err) throw err;
-                //             console.log('File Saved!');
-                //             ind++;
-                //             // if (ind>2) res.end("hello");
-                //             console.log(ind);
-                //         });
-                //     });
-                // });
-                // app.get('/upload1.hbs', function (req, res) {
-                //     const file = './pubmaticData.csv';
-                //     res.download(file); // Устанавливаем диспозицию и отправляем ее.
-                // });
+                
             });
         }
         app.post("/upload1.hbs", urlencodedParser, function (request, response) {
             if(!request.body) return response.sendStatus(400);
-            // console.log('request.body==========');
-            // console.log(request.body);
-            // console.log(request);
-            // console.log('request.body==========');
-            // console.log(`Поисковые_запросы: ${results[ind]['Поисковые_запросы']}`);
-            // results[ind]['Поисковые_запросы'] = request.body.req_found;/////////
-            /////////////////////
-            // console.log('request.bjdy.req_found');
             console.log(request.body.req_found);
-            // console.log(`Поисковые_запросы: ${results[ind]['Поисковые_запросы']}`);
             for (let i = 0; i < results.length; i++) {
                 console.log("request.body.req_found");
                 console.log(request.body.req_found[i]);
@@ -141,17 +105,38 @@ try {
                 results[i]['Название_позиции'] = request.body.req_name[i];
                 results[i]['Название_группы'] = request.body.req_group[i];
             }
-            // response.send(`${request.body.req_found} - ${request.body.req_group}`);
             let apiDataPull = Promise.resolve(results).then(data => {
                 return json2csv.parseAsync(data, {fields: Object.keys(results[0])})
             }).then(csv => {
-                fs.writeFile('pubmaticData.csv', csv, function (err) {
-                    if (err) throw err;
-                    console.log('File Saved!');
-                    ind++;
-                    // if (ind>2) res.end("hello");
-                    console.log(ind);
+                //==================
+                let myFirstPromise = new Promise((resolve, reject) => {
+                    fs.writeFile('newcsv.csv', csv, function (err) {
+                        if (err) throw err;
+                        console.log('File Saved!');
+                        ind++;
+                        console.log(ind);
+                        resolve("Success!");
+                    });
                 });
+                myFirstPromise.then((message)=>{
+                    let source = path.join(__dirname, 'newcsv.csv');
+                    let destination = path.join(__dirname, './newxl.xlsx');
+
+                    try {
+                    convertCsvToXlsx(source, destination);
+                    } catch (e) {
+                    console.error(e.toString());
+                    }
+                    console.log(message);
+                });
+                //=====================
+                // fs.writeFile('newcsv.csv', csv, function (err) {
+                //     if (err) throw err;
+                //     console.log('File Saved!');
+                //     ind++;
+                //     // if (ind>2) res.end("hello");
+                //     console.log(ind);
+                // });
 
             });
             // app.get('/upload1.hbs', function (req, res) {
@@ -161,7 +146,7 @@ try {
         });
 });
 app.get('/upload1.hbs', function (req, res) {
-    const file = './pubmaticData.csv';
+    const file = './newxl.xlsx';
     res.download(file); // Устанавливаем диспозицию и отправляем ее.
 });
 
