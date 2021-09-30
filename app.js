@@ -29,28 +29,21 @@ app.post("/", function (req, res, next) {
     
 try {
     if(fs.existsSync(csvpath)){
-    
         fs.unlinkSync(csvpath);
         console.log('csv-file was delete!');
     } 
     if(fs.existsSync(exelpath)){
-    
         fs.unlinkSync(exelpath);
         console.log('exel-file was delete!');
     } 
-}
-//     if (fs.existsSync(csvpath)) {
-//     fs.unlinkSync(csvpath);//file removed
-    
-//     console.log('csv-file was delete!');
-//     } 
-  
-  catch(err) {
+    else {
+        console.log('Main directory does not contain temporary csv or exel files');
+    }
+}  catch(err) {
     console.error(err)
   }
     // console.log(__dirname);
     let filedata = req.file;
-//     console.log(filedata);
     if(!filedata) res.send("Ошибка при загрузке файла");
     else {
         
@@ -73,15 +66,8 @@ try {
                     resname.push(data_n);
                     resgroup.push(data_g);
                 }
-                // let item_name = results[ind]['Название_позиции'];
-                // console.log(`item_name: ${item_name}`);
                 let req_name = resname;
-                // console.log(`item_name: ${item_name}`);
-
-                // let req_group = results[ind]['Название_группы'];
                 let req_group = resgroup;
-
-                // let req_found = results[ind]['Поисковые_запросы'];
                 let req_found = resfound;
                 res.render("upload1.hbs", {
                     req_name: req_name,
@@ -90,9 +76,7 @@ try {
                     resfound: resfound,
                     resname: resname,
                     resgroup: resgroup
-                    
                 });
-                
             });
         }
         app.post("/upload1.hbs", urlencodedParser, function (request, response) {
@@ -115,7 +99,7 @@ try {
                         console.log('File Saved!');
                         ind++;
                         console.log(ind);
-                        resolve("Success!");
+                        resolve("Temporary files created!");
                     });
                 });
                 myFirstPromise.then((message)=>{
@@ -127,6 +111,10 @@ try {
                     } catch (e) {
                     console.error(e.toString());
                     }
+                    rimraf('./uploads/*', function () { 
+                        console.log('Directory ./uploads is empty!'); 
+                    // !! if you remove the asterisk -> *, this folder will be deleted!
+                });
                     console.log(message);
                 });
                 //=====================
