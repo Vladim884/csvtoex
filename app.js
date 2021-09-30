@@ -7,6 +7,8 @@ const json2csv = require("json2csv");
 const urlencodedParser = express.urlencoded({extended: false});
 const convertCsvToXlsx = require('@aternus/csv-to-xlsx');
 const rimraf = require('rimraf');
+const csvpath = './newcsv.csv';
+    const exelpath = './newxl.xlsx';
 
 let ind = 0
 const app = express();
@@ -23,8 +25,7 @@ app.post("/", function (req, res, next) {
     let resfound = [];
     let resname = [];
     let resgroup = [];
-    const csvpath = './newcsv.csv';
-    const exelpath = './newxl.xlsx';
+    
     //==========
     
 try {
@@ -135,7 +136,12 @@ try {
 });
 app.get('/upload1.hbs', function (req, res) {
     const file = './newxl.xlsx';
-    res.download(file); // Устанавливаем диспозицию и отправляем ее.
+    res.download(file, function () {
+        fs.unlinkSync(csvpath);
+        fs.unlinkSync(exelpath);
+        console.log('Main directory does not contain temporary csv or exel files');
+
+    }); 
 });
 
 app.listen(3000, function(){
