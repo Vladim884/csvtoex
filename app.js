@@ -1,4 +1,6 @@
 const express = require("express");
+const hbs = require("hbs");
+const expressHbs = require("express-handlebars");
 const multer  = require("multer");
 const fs = require('fs');
 const path = require('path');  
@@ -7,14 +9,21 @@ const json2csv = require("json2csv");
 const urlencodedParser = express.urlencoded({extended: false});
 const convertCsvToXlsx = require('@aternus/csv-to-xlsx');
 const rimraf = require('rimraf');
+const app = express();
+app.engine("hbs", expressHbs(
+    {
+        layoutsDir: "views/layouts", 
+        defaultLayout: "layout",
+        extname: "hbs"
+    }
+))
+hbs.registerPartials(__dirname + "/views/partials");
+app.set("view engine", "hbs");
 const csvpath = './newcsv.csv';
     const exelpath = './newxl.xlsx';
 
-let ind = 0
-const app = express();
-// let resfound = [];
-// const resname = [];
-// const resgroup = [];
+let ind = 0;
+
 app.use(express.static(__dirname));
 app.use(multer({dest:"uploads"}).single("filedata"));
 
@@ -22,7 +31,7 @@ app.set("view engine", "hbs");
 
 app.post("/", function (req, res, next) {
     let results = [];
-    let resfound = [];
+    let resfind = [];
     let resname = [];
     let resgroup = [];
     
@@ -63,18 +72,18 @@ try {
                     let data_n = results[i]['Название_позиции'];
                     let data_g = results[i]['Название_группы'];
 
-                    resfound.push(data_f);
+                    resfind.push(data_f);
                     resname.push(data_n);
                     resgroup.push(data_g);
                 }
                 let req_name = resname;
                 let req_group = resgroup;
-                let req_found = resfound;
+                let req_find = resfind;
                 res.render("upload1.hbs", {
                     req_name: req_name,
                     req_group: req_group,
-                    req_found: req_found,
-                    resfound: resfound,
+                    req_find: req_find,
+                    resfind: resfind,
                     resname: resname,
                     resgroup: resgroup
                 });
@@ -82,11 +91,11 @@ try {
         }
         app.post("/upload1.hbs", urlencodedParser, function (request, response) {
             if(!request.body) return response.sendStatus(400);
-            console.log(request.body.req_found);
+            console.log(request.body.req_find);
             for (let i = 0; i < results.length; i++) {
-                console.log("request.body.req_found");
-                console.log(request.body.req_found[i]);
-                results[i]['Поисковые_запросы'] = request.body.req_found[i];
+                console.log("request.body.req_find");
+                console.log(request.body.req_find[i]);
+                results[i]['Поисковые_запросы'] = request.body.req_find[i];
                 results[i]['Название_позиции'] = request.body.req_name[i];
                 results[i]['Название_группы'] = request.body.req_group[i];
             }
